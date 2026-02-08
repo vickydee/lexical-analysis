@@ -84,15 +84,16 @@ TokenType LexicalAnalyzer::FindKeywordIndex(string s)
 Token LexicalAnalyzer::ScanNumber()
 {
     char c;
-
     // New Lookahead Variables
     char 
     // 
-    int flag8;
+    int notflag8;
     int flag0;
 
     input.GetChar(c);
+    // Singular Char Lexemes
     if (isdigit(c)) {
+        // flag0 singular char case
         if (c == '0') {
             tmp.lexeme = "0";
             flag0 = 1;
@@ -102,6 +103,10 @@ Token LexicalAnalyzer::ScanNumber()
             while (!input.EndOfInput() && isdigit(c)) {
                 tmp.lexeme += c;
                 input.GetChar(c);
+                // flag8 singular char case
+                if (c == '8' || c == '9') {
+                    notflag8 = 1;
+                }
             }
             if (!input.EndOfInput()) {
                 input.UngetChar(c);
