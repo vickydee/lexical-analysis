@@ -5,7 +5,8 @@ In this case, we have three NEW tokens:
 * REALNUM (decimal with a fractional part)
 * BASE08NUM (octal-style form ending in x08)
 * BASE16NUM (hex-style form ending in x16, allows A–F)
-As well as existing:
+
+As well as the existing:
 * NUM (use the existing ScanNumber())
 
 # How to Install
