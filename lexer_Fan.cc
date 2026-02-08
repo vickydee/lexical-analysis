@@ -119,11 +119,13 @@ Token LexicalAnalyzer::ScanNumber()
 
         // don’t make 0.000 a REALNUM
         
+        input.GetChar();
         /* scanning in variables */() {
             int flagnotzero = 0;
             if (input.getChar(nextC) == '.') {
                 while (!input.EndOfInput() && isdigit(c)) {
-                    if(input.getChar(c/* variable lets just say c*/) != 0) {
+                    input.GetChar(c);
+                    if(c != 0) {
                         flagnotzero = 1;
                     }
                 }
