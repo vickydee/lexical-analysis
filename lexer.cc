@@ -85,11 +85,19 @@ Token LexicalAnalyzer::ScanNumber()
 {
     char c;
 
+    // New Lookahead Variables
+    char 
+    // 
+    int flag8;
+    int flag0;
+
     input.GetChar(c);
     if (isdigit(c)) {
         if (c == '0') {
             tmp.lexeme = "0";
-        } else {
+            flag0 = 1;
+        } 
+        else {
             tmp.lexeme = "";
             while (!input.EndOfInput() && isdigit(c)) {
                 tmp.lexeme += c;
@@ -103,7 +111,8 @@ Token LexicalAnalyzer::ScanNumber()
         tmp.token_type = NUM;
         tmp.line_no = line_no;
         return tmp;
-    } else {
+    }
+    else {
         if (!input.EndOfInput()) {
             input.UngetChar(c);
         }
@@ -113,6 +122,11 @@ Token LexicalAnalyzer::ScanNumber()
         return tmp;
     }
 }
+
+
+
+
+
 
 Token LexicalAnalyzer::ScanIdOrKeyword()
 {
