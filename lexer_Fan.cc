@@ -85,10 +85,11 @@ Token LexicalAnalyzer::ScanNumber()
 {
     char c;
     // New Lookahead Variables
-    char 
+    char nextC, 
     // 
-    int notflag8;
+    int flagnot8;
     int flag0;
+    int flag;
 
     input.GetChar(c);
     // Singular Char Lexemes
@@ -105,14 +106,36 @@ Token LexicalAnalyzer::ScanNumber()
                 input.GetChar(c);
                 // flag8 singular char case
                 if (c == '8' || c == '9') {
-                    notflag8 = 1;
+                    flagnot8 = 1;
                 }
             }
             if (!input.EndOfInput()) {
                 input.UngetChar(c);
             }
         }
-        // TODO: You can check for REALNUM, BASE08NUM and BASE16NUM here!
+        // Check for REALNUM, BASE08NUM and BASE16NUM here
+
+        // REALNUM
+
+        // don’t make 0.000 a REALNUM
+        
+        /* scanning in variables */() {
+            int flagnotzero = 0;
+            if (input.getChar(nextC) == '.') {
+                while (!input.EndOfInput() && isdigit(c)) {
+                    if(input.getChar(c/* variable lets just say c*/) != 0) {
+                        flagnotzero = 1;
+                    }
+                }
+                if (flagnotzero == 0 && flag0 == 1) {
+                    tmp.token_type = NUM;
+                    tmp.line_no = line_no;
+                    return tmp;
+                }
+            }
+        }
+        
+        
         tmp.token_type = NUM;
         tmp.line_no = line_no;
         return tmp;
