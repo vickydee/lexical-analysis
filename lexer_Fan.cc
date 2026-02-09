@@ -113,10 +113,14 @@ Token LexicalAnalyzer::ScanNumber()
                 input.UngetChar(c);
             }
         }
+        if (input.EndOfInput()) {
+            tmp.token_type = NUM;
+            return tmp;
+        }
         // Check for REALNUM, BASE08NUM and BASE16NUM here
 
         // REALNUM
-
+        
         char la; //lookahead variable
         char f; //lookahead variable for fractional (i.e. after decimal point) component
         input.GetChar(la);
@@ -144,10 +148,11 @@ Token LexicalAnalyzer::ScanNumber()
             return tmp;
         }           
         // Special case: don't make 0.000 a REALNUM
-        if (flag0only == 1 && hasNonZero == 0) {
+        if (flag0 == 1 && hasNonZero == 0) {
             // put back the digits and the dot for later tokenization
             input.UngetString(frac);
             input.UngetChar(la);
+            
             tmp.token_type = NUM;
             return tmp;
         }
@@ -158,7 +163,7 @@ Token LexicalAnalyzer::ScanNumber()
         return tmp;
     }
             
-/*       input.GetChar();
+    /*   input.GetChar();
          scanning in variables () {
             int flagnotzero = 0;
             if (input.getChar(nextC) == '.') {
@@ -177,10 +182,89 @@ Token LexicalAnalyzer::ScanNumber()
             }
             input.UngetChar(nextC);
         }
-*/        
+    */        
+
+
+    // BASE08NUM / BASE16NUM or <digits>x08 / <digits>x16
         
+    if (la == 'x') {
+        char a, b;
+        if (!input.EndOfInput()) {
+            input.GetChar(a); 
+        } 
+        else {
+            a = '\0';
+        }
+        if (!input.EndOfInput()) {
+            input.GetChar(b); 
+        } 
+        else {
+            b = '\0';
+        }
+        // x08
+        if (a == '0' && b == '8' && flag8or9 == 0) {
+            tmp.lexeme += "x08";
+            tmp.token_type = BASE08NUM;
+            return tmp;
+        }
+
+        // x16
+        if (a == '1' && b == '6') {
+            tmp.lexeme += "x16";
+            tmp.token_type = BASE16NUM;
+            return tmp;
+        }
+
+        // failed match -> backtrack
+        if (b != '\0') input.UngetChar(b);
+        if (a != '\0') input.UngetChar(a);
+        input.UngetChar(la);
         tmp.token_type = NUM;
-        tmp.line_no = line_no;
+        return tmp;
+        }
+    
+        // hex digits A-F appear after initial digits, must end with x16
+        auto isHexTail = [](char ch) {
+            return isdigit(ch) || (ch >= 'A' && ch <= 'F');
+        };
+    
+        if (la >= 'A' && la <= 'F') {
+            string tail = "";
+            tail += la;
+    
+            char h;
+            input.GetChar(h);
+            while (!input.EndOfInput() && isHexTail(h)) {
+                tail += h;
+                input.GetChar(h);
+            }
+            if (!input.EndOfInput()) input.UngetChar(h);
+    
+            // now expect x16
+            char x, one, six;
+            if (!input.EndOfInput()) input.GetChar(x); else x = '\0';
+            if (!input.EndOfInput()) input.GetChar(one); else one = '\0';
+            if (!input.EndOfInput()) input.GetChar(six); else six = '\0';
+    
+            if (x == 'x' && one == '1' && six == '6') {
+                tmp.lexeme += tail;
+                tmp.lexeme += "x16";
+                tmp.token_type = BASE16NUM;
+                return tmp;
+            }
+    
+            // backtrack everything
+            if (six != '\0') input.UngetChar(six);
+            if (one != '\0') input.UngetChar(one);
+            if (x != '\0') input.UngetChar(x);
+            input.UngetString(tail);
+            tmp.token_type = NUM;
+            return tmp;
+        }
+    
+        // ---- Default: not a special number ----
+        input.UngetChar(la);
+        tmp.token_type = NUM;
         return tmp;
     }
     else {
