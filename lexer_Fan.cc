@@ -85,8 +85,8 @@ TokenType LexicalAnalyzer::FindKeywordIndex(string s)
 
 Token LexicalAnalyzer::ScanNumber()
 { 
-    int flag8o9; //saw integer 8/9
-    int flag0; //"0"
+    int flag8o9 = 0; //saw integer 8/9
+    int flag0 = 0; //"0"
 
     char c;
     
