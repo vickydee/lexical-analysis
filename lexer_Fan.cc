@@ -82,16 +82,17 @@ TokenType LexicalAnalyzer::FindKeywordIndex(string s)
 }
 
 Token LexicalAnalyzer::ScanNumber()
-{
+{ 
+    int flag8o9; //saw integer 8/9
+    int flag0; //"0"
+
     char c;
-    // New Lookahead Variables
-    char nextC, 
-    // 
-    int flagnot8;
-    int flag0;
-    int flag;
+    
+    tmp.lexeme = "";
+    tmp.line_no = line_no;
 
     input.GetChar(c);
+    
     // Singular Char Lexemes
     if (isdigit(c)) {
         // flag0 singular char case
@@ -100,14 +101,13 @@ Token LexicalAnalyzer::ScanNumber()
             flag0 = 1;
         } 
         else {
-            tmp.lexeme = "";
             while (!input.EndOfInput() && isdigit(c)) {
                 tmp.lexeme += c;
-                input.GetChar(c);
                 // flag8 singular char case
                 if (c == '8' || c == '9') {
-                    flagnot8 = 1;
+                    flag8o9 = 1;
                 }
+                input.GetChar(c);
             }
             if (!input.EndOfInput()) {
                 input.UngetChar(c);
@@ -117,16 +117,56 @@ Token LexicalAnalyzer::ScanNumber()
 
         // REALNUM
 
-        // don’t make 0.000 a REALNUM
-        
-        input.GetChar();
-        /* scanning in variables */() {
+        char la; //lookahead variable
+        char f; //lookahead variable for fractional (i.e. after decimal point) component
+        input.GetChar(la);
+        if(la == '.') {
+            string frac = "";
+            int hasNonZero = 0;
+            if (!input.EndofInput()) {
+                input.GetChar(f);
+                while (!input.EndofInput() && isdigit(f)) {
+                frac += f;
+                if (f != '0') {
+                    hasNonZero = 1
+                }
+                input.GetChar(f);
+            }
+            if (!input.EndOfInput()) {
+                input.UngetChar(f);
+            } 
+        }
+        // If no fractional digits at all
+        // Tokenize as NUM
+        if (frac.size() == 0) {
+            input.UngetChar(la);     // put back '.'
+            tmp.token_type = NUM;
+            return tmp;
+        }           
+        // Special case: don't make 0.000 a REALNUM
+        if (flag0only == 1 && hasNonZero == 0) {
+            // put back the digits and the dot for later tokenization
+            input.UngetString(frac);
+            input.UngetChar(la);
+            tmp.token_type = NUM;
+            return tmp;
+        }
+        // Otherwise it's REALNUM
+        tmp.lexeme += '.';
+        tmp.lexeme += frac;
+        tmp.token_type = REALNUM;
+        return tmp;
+    }
+            
+/*       input.GetChar();
+         scanning in variables () {
             int flagnotzero = 0;
             if (input.getChar(nextC) == '.') {
                 while (!input.EndOfInput() && isdigit(c)) {
                     input.GetChar(c);
                     if(c != 0) {
                         flagnotzero = 1;
+                        input.UngetChar(c);
                     }
                 }
                 if (flagnotzero == 0 && flag0 == 1) {
@@ -135,8 +175,9 @@ Token LexicalAnalyzer::ScanNumber()
                     return tmp;
                 }
             }
+            input.UngetChar(nextC);
         }
-        
+*/        
         
         tmp.token_type = NUM;
         tmp.line_no = line_no;
